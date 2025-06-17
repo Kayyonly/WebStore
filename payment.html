@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halaman Pembayaran - Zanspiw Store</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Gaya tambahan khusus untuk halaman pembayaran */
+        .payment-container { max-width: 800px; margin: 2rem auto; padding: 2rem; background-color: var(--surface-color); border-radius: 15px; }
+        .payment-section { margin-bottom: 2.5rem; }
+        .payment-section h2, .payment-section h3 { border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1.5rem; color: var(--primary-color); }
+        .payment-section h3 { font-size: 1.2rem; color: var(--text-secondary); margin-top: 2rem; }
+        .order-item { display: flex; justify-content: space-between; margin-bottom: 0.5rem; padding: 0.5rem 0; }
+        .order-item-name { color: var(--text-secondary); }
+        .order-total { border-top: 1px solid var(--border-color); margin-top: 1rem; padding-top: 1rem; display: flex; justify-content: space-between; font-size: 1.5rem; font-weight: 700; }
+        .payment-method { display: flex; align-items: center; gap: 1.5rem; padding: 1rem; background-color: #2a2a2a; border-radius: 8px; margin-bottom: 1rem; }
+        .payment-logo { width: 80px; object-fit: contain; }
+        .payment-details p { margin: 0; font-size: 1.2rem; font-weight: 600; color: var(--text-primary); }
+        .payment-details span { font-size: 0.9rem; color: var(--text-secondary); }
+        .copy-btn { margin-left: auto; background-color: var(--primary-color); color: #111; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; font-weight: 600; }
+        .qris-header { display: flex; align-items: center; padding: 1rem; background-color: #2a2a2a; border-radius: 8px; cursor: pointer; gap: 1.5rem; }
+        .qris-header h4 { font-size: 1.2rem; margin: 0; }
+        .qris-header .arrow { margin-left: auto; font-size: 1.5rem; transition: transform 0.3s ease; }
+        .qris-header.open .arrow { transform: rotate(180deg); }
+        .qris-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out, padding 0.4s ease-out; background-color: #222; text-align: center; border-radius: 0 0 8px 8px; }
+        .qris-content.visible { max-height: 500px; padding: 1.5rem; }
+        .qris-content img { max-width: 300px; width: 100%; border-radius: 8px; cursor: zoom-in; }
+        .enlarge-hint { color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.5rem; }
+        .qris-content a { display: inline-block; margin-top: 1rem; color: var(--primary-color); text-decoration: none; font-weight: 600; border: 1px solid var(--primary-color); padding: 0.5rem 1rem; border-radius: 5px; }
+        .image-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: none; justify-content: center; align-items: center; z-index: 4000; }
+        .enlarged-image { max-width: 90vw; max-height: 90vh; object-fit: contain; }
+        .image-modal-close-btn { position: absolute; top: 20px; right: 30px; font-size: 2.5rem; color: white; cursor: pointer; font-weight: bold; }
+        .confirmation-section { text-align: center; border-top: 1px solid var(--border-color); padding-top: 2rem; margin-top: 2rem; }
+        .btn-whatsapp-confirm { display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 1rem 2rem; background-color: var(--primary-color); color: #111; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; text-decoration: none; transition: background-color 0.3s ease; }
+        .btn-whatsapp-confirm:hover { background-color: var(--primary-hover-color); }
+        .confirmation-note { color: var(--text-secondary); font-size: 0.9rem; margin-top: 1.5rem; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .back-link:hover {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+    <a href="index.html" class="back-link">&larr; Kembali ke Toko</a>
+        <div class="payment-section">
+            <h2>Ringkasan Pesanan</h2>
+            <div id="order-summary-items"></div>
+            <div class="order-total">
+                <span>Total Pembayaran:</span>
+                <span id="total-payment">Rp 0</span>
+            </div>
+        </div>
+
+        <div class="payment-section">
+            <h2>Metode Pembayaran</h2>
+            
+            <h3>QRIS (Semua E-Wallet & m-Banking)</h3>
+            <div class="qris-container">
+                <div class="qris-header" id="qris-toggle">
+                    <img src="https://files.catbox.moe/e64m51.jpg" alt="QRIS" class="payment-logo">
+                    <h4>Klik untuk Tampilkan/Sembunyikan QR</h4>
+                    <span class="arrow">▾</span>
+                </div>
+                <div class="qris-content" id="qris-content">
+                    <img id="qris-image" src="https://files.catbox.moe/e64m51.jpg" alt="QR Code Pembayaran">
+                    <p class="enlarge-hint">Klik gambar untuk perbesar</p>
+                    <a href="https://files.catbox.moe/e64m51.jpg" download="QRIS-Zanspiw-Store.png">Download QR</a>
+                </div>
+            </div>
+
+            <h3>E-Wallet</h3>
+            <div class="payment-method">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Logo_dana_blue.svg/2560px-Logo_dana_blue.svg.png" alt="DANA" class="payment-logo">
+                <div class="payment-details"><p id="dana-number">62895391539843</p><span>a.n. John Doe</span></div>
+                <button class="copy-btn" data-target="dana-number">Salin</button>
+            </div>
+            <div class="payment-method">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Gopay_logo.svg/2560px-Gopay_logo.svg.png" alt="GOPAY" class="payment-logo">
+                <div class="payment-details"><p id="gopay-number">62895391539843</p><span>a.n. John Doe</span></div>
+                <button class="copy-btn" data-target="gopay-number">Salin</button>
+            </div>
+            <div class="payment-method">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Logo_ovo_purple.svg/1280px-Logo_ovo_purple.svg.png" alt="OVO" class="payment-logo">
+                <div class="payment-details"><p id="ovo-number">62895391539843</p><span>a.n. John Doe</span></div>
+                <button class="copy-btn" data-target="ovo-number">Salin</button>
+            </div>
+
+            <h3>Transfer Bank</h3>
+            <div class="payment-method">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Bank_Central_Asia_logo.svg/2560px-Bank_Central_Asia_logo.svg.png" alt="BCA" class="payment-logo">
+                <div class="payment-details"><p id="bca-number">62895391539843</p><span>a.n. John Doe</span></div>
+                <button class="copy-btn" data-target="bca-number">Salin</button>
+            </div>
+        </div>
+        
+        <div class="confirmation-section">
+            <a id="whatsapp-confirm-btn" href="#" target="_blank" class="btn-whatsapp-confirm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/></svg>
+                Konfirmasi Pembayaran via WhatsApp
+            </a>
+            <p class="confirmation-note">Setelah melakukan pembayaran, harap kirimkan bukti transfer ke nomor WhatsApp di atas untuk mempercepat proses verifikasi.</p>
+        </div>
+    </div>
+
+    <div id="image-modal-overlay" class="image-modal-overlay">
+        <span class="image-modal-close-btn">&times;</span>
+        <img id="enlarged-qris-image" class="enlarged-image" src="">
+    </div>
+
+    <script src="payment.js"></script>
+</body>
+</html>
